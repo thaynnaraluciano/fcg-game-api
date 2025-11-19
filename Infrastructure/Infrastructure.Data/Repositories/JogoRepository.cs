@@ -1,0 +1,52 @@
+﻿using Infrastructure.Data.Interfaces;
+using Infrastructure.Data.Models.Jogos;
+using Microsoft.EntityFrameworkCore;
+using System;
+
+namespace Infrastructure.Data.Repositories
+{
+    public class JogoRepository : IJogoRepository
+    {
+        private readonly AppDbContext _context;
+
+        public JogoRepository(AppDbContext context)
+        {
+            _context = context;
+        }
+
+        public async Task AdicionarAsync(JogoModel jogo)
+        {
+            await _context.Jogos.AddAsync(jogo);
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task AtualizarAsync(JogoModel jogo)
+        {
+            _context.Jogos.Update(jogo);
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task<List<JogoModel>> BuscarPorIdsAsync(List<Guid> ids)
+        {
+            return await _context.Jogos
+                .Where(j => ids.Contains(j.Id))
+                .ToListAsync();
+        }
+
+        public async Task<JogoModel> ObterPorIdAsync(Guid id)
+        {
+            return await _context.Jogos.FindAsync(id);
+        }
+
+        public async Task<IEnumerable<JogoModel>> ObterTodosAsync()
+        {
+            return await _context.Jogos.ToListAsync();
+        }
+
+        public async Task RemoverAsync(JogoModel jogo)
+        {
+            _context.Jogos.Remove(jogo);
+            await _context.SaveChangesAsync();
+        }
+    }
+}

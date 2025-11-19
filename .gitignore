@@ -1,0 +1,124 @@
+## Visual Studio / .NET Build Artifacts
+bin/
+obj/
+[Bb]uild/
+[Ll]og/
+TestResults/
+*.user
+*.rsuser
+*.suo
+*.cache
+*.pdb
+*.mdb
+*.opendb
+*.VC.db
+*.vsp
+*.vspscc
+*.vssscc
+*.ncb
+*.aps
+*.ilk
+*.tmp
+*.log
+*.vspscc
+*.tlog
+*.lastcodeanalysissucceeded
+*.tscache
+*.vsix
+*.psess
+*.vspx
+*.pidb
+*.svclog
+*.xsd.cache
+
+## Visual Studio Code
+.vscode/
+.history/
+.idea/
+*.code-workspace
+
+## Rider
+.idea/
+*.sln.iml
+
+## ASP.NET / Web
+node_modules/
+bower_components/
+wwwroot/lib/
+wwwroot/dist/
+dist/
+*.bundle.js
+*.map
+*.min.js
+*.min.css
+
+## NuGet
+*.nupkg
+*.snupkg
+*.nuspec
+packages/
+.nuget/
+project.lock.json
+project.fragment.lock.json
+artifacts/
+
+## User-specific files
+*.userprefs
+*.userosscache
+*.user
+*.rsuser
+*.swp
+*.orig
+
+## Entity Framework / Migrations
+Migrations/obj/
+Migrations/bin/
+*_MigrationHistory.sql
+
+## Azure / Cloud
+PublishProfiles/
+*.pubxml
+*.azurePubxml
+*.azurePubxml.user
+*.PublishSettings
+App_Data/
+Generated\ Files/
+
+## Logs and Diagnostics
+*.log
+logs/
+*.svclog
+*.trace
+*.coverage
+*.coveragexml
+
+## JetBrains Rider
+.idea/
+*.sln.iml
+
+## Test Results
+TestResults/
+*.trx
+*.testlog
+*.vsmdi
+*.coverage
+*.coveragexml
+*.testsettings
+*.runsettings
+
+## Docker / Container
+docker-compose.override.yml
+.env
+.dockerignore
+
+## OS / Misc
+.DS_Store
+Thumbs.db
+ehthumbs.db
+desktop.ini
+
+## Tooling
+.vs/
+.vscode/
+.vsconfig
+*.dbmd*
