@@ -13,6 +13,7 @@ using Domain.Commands.v1.Promocoes.CriarPromocao;
 using Domain.Commands.v1.Promocoes.ListarPromocoes;
 using Domain.Commands.v1.Promocoes.RemoverPromocao;
 using Domain.MapperProfiles;
+using DotNetEnv;
 using FluentValidation;
 using Infrastructure.Data;
 using Infrastructure.Data.Interfaces;
@@ -78,26 +79,29 @@ builder.Services.AddScoped<IPromocaoRepository, PromocaoRepository>();
 builder.Services.AddScoped<IBibliotecaRepository, BibliotecaRepository>();
 #endregion
 
+try
+{
+    Env.Load();
+}
+catch
+{
+    //Caso do deploy.
+    Console.WriteLine(".env não encontrado, usando apenas variáveis de ambiente...");
+}
+
 // Le variáveis de ambiente (do SO, .env ou secrets)
-//string host = Environment.GetEnvironmentVariable("DB_HOST") ?? "localhost";
-//string db = Environment.GetEnvironmentVariable("DB_NAME") ?? "testdb";
-//string user = Environment.GetEnvironmentVariable("DB_USER") ?? "root";
-//string pass = Environment.GetEnvironmentVariable("DB_PASSWORD") ?? "";
+string host = Environment.GetEnvironmentVariable("DB_HOST") ?? "localhost";
+string db = Environment.GetEnvironmentVariable("DB_NAME") ?? "testdb";
+string user = Environment.GetEnvironmentVariable("DB_USER") ?? "root";
+string pass = Environment.GetEnvironmentVariable("DB_PASSWORD") ?? "";
 
-//string connString = $"Server={host};Database={db};User={user};Password={pass};";
+string connString = $"Server={host};Database={db};User={user};Password={pass};";
 
-//builder.Services.AddDbContext<AppDbContext>(options => options.UseMySql
-//(
-//    connString,
-//    new MySqlServerVersion(new Version(8, 0, 42))
-//));
-
-var connString = builder.Configuration.GetConnectionString("DefaultConnection");
 
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseMySql(
         connString,
-        new MySqlServerVersion(new Version(8, 0, 42))
+        new MySqlServerVersion(new Version(8, 0, 43))
     ));
 
 var app = builder.Build();
