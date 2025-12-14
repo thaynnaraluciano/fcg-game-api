@@ -1,0 +1,37 @@
+version: '3.9'
+
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: fiap-api
+    ports:
+      - "8080:8080"
+    depends_on:
+      - mysql
+    environment:
+      ASPNETCORE_ENVIRONMENT: "Development"
+      ConnectionStrings__DefaultConnection: "server=mysql;database=DbJogoFiap;user=root;password=root"
+    networks:
+      - fiap-net
+
+  mysql:
+    image: mysql:8.0
+    container_name: fiap-mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: DbJogoFiap
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - fiap-net
+
+networks:
+  fiap-net:
+
+volumes:
+  mysql_data:
