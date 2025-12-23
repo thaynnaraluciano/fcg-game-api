@@ -1,0 +1,79 @@
+version: '3.8'
+
+services:
+  api:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    image: fiap-games-api:1.0.0
+    container_name: fiap-game-api
+    ports:
+      - "8080:8080"
+    depends_on:
+       mysql:
+         condition: service_healthy
+    environment:
+     ASPNETCORE_ENVIRONMENT: "Development"
+     DB_HOST: "mysql"
+     DB_NAME: "Bd_Games"
+     DB_USER: "root"
+     DB_PASSWORD: "root"
+    networks:
+      - fiap-net
+
+  mysql:
+    healthcheck:
+       test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+       interval: 10s
+       timeout: 5s
+       retries: 5
+    image: mysql:8.0
+    container_name: fiap-mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: "root"
+      MYSQL_DATABASE: Bd_Games
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - fiap-net
+
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+    networks:
+      - fiap-net
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    ports:
+      - "3030:3000"
+    depends_on:
+      - prometheus
+    networks:
+      - fiap-net
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    volumes:
+      # Volume persistente de dados (banco interno do Grafana)
+      - grafana-data:/var/lib/grafana
+
+      # Provisionamento automático de dashboards e datasources
+      - ./grafana/provisioning:/etc/grafana/provisioning
+
+networks:
+  fiap-net:
+    driver: bridge
+
+volumes:
+  mysql_data:
+  grafana-data:
+  
