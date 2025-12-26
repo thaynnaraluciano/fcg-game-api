@@ -1,3 +1,4 @@
+using Api.Services;
 using Api.Utils;
 using CrossCutting.Exceptions.Middlewares;
 using Domain.Commands.v1.Biblioteca.ComprarJogo;
@@ -79,6 +80,12 @@ builder.Services.AddScoped<IPromocaoRepository, PromocaoRepository>();
 builder.Services.AddScoped<IBibliotecaRepository, BibliotecaRepository>();
 #endregion
 
+#if DEBUG
+//Chama o gerenciador do docker ANTES da aplicação iniciar
+string connString = builder.Configuration.GetConnectionString(name: "DefaultConnection") ?? "";
+await DockerMySqlManager.EnsureMySqlContainerRunningAsync(connString);
+#else
+
 try
 {
     Env.Load();
@@ -97,6 +104,7 @@ string pass = Environment.GetEnvironmentVariable("DB_PASSWORD") ?? "";
 
 string connString = $"Server={host};Database={db};User={user};Password={pass};";
 
+#endif
 
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseMySql(
@@ -105,6 +113,13 @@ builder.Services.AddDbContext<AppDbContext>(options =>
     ));
 
 var app = builder.Build();
+#if DEBUG
+//Aguardando docker subir.
+await Infrastructure.Data.MigrationHelper.WaitForMySqlAsync(connString);
+//Aplica migrations se não estiver atualizado
+Infrastructure.Data.MigrationHelper.ApplyMigrations(app);
+
+#endif
 
 app.UseSwagger();
 app.UseSwaggerUI();
