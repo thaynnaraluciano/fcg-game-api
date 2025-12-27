@@ -1,5 +1,6 @@
 using Api.Services;
 using Api.Utils;
+using CrossCutting.Configuration;
 using CrossCutting.Exceptions.Middlewares;
 using Domain.Commands.v1.Biblioteca.ComprarJogo;
 using Domain.Commands.v1.Biblioteca.ConsultaBiblioteca;
@@ -76,6 +77,7 @@ builder.Services.AddScoped<IValidator<ComprarJogoCommand>, ComprarJogoCommandVal
 
 #region Interfaces
 builder.Services.AddScoped<IJogoRepository, JogoRepository>();
+builder.Services.AddScoped<IJogoESRepository, JogoESRepository>();
 builder.Services.AddScoped<IPromocaoRepository, PromocaoRepository>();
 builder.Services.AddScoped<IBibliotecaRepository, BibliotecaRepository>();
 #endregion
@@ -111,6 +113,8 @@ builder.Services.AddDbContext<AppDbContext>(options =>
         connString,
         new MySqlServerVersion(new Version(8, 0, 43))
     ));
+
+builder.Services.AddCrossCutting(builder.Configuration);
 
 var app = builder.Build();
 #if DEBUG

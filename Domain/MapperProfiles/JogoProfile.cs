@@ -11,11 +11,12 @@ namespace Domain.MapperProfiles
     {
         public JogoProfile()
         {
-            CreateMap<JogoModel, ListarJogoCommandResponse>();
+            CreateMap<JogoESDocumentoModel, ListarJogoCommandResponse>();
             CreateMap<JogoModel, AtualizarJogoCommandResponse>();
-            CreateMap<JogoModel, CriarJogoCommandResponse>();
+            CreateMap<JogoESDocumentoModel, CriarJogoCommandResponse>();
             CreateMap<JogoModel, BuscarJogoPorIdCommandResponse>();
-            CreateMap<CriarJogoCommand, JogoModel>();
+            CreateMap<CriarJogoCommand, JogoESDocumentoModel>();
+            CreateMap<JogoESDocumentoModel, BuscarJogoPorIdCommandResponse>();
         }
     }
 }
