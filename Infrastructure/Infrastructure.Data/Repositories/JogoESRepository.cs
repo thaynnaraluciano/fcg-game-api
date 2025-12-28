@@ -1,4 +1,5 @@
 ﻿using Elastic.Clients.Elasticsearch;
+using Elastic.Clients.Elasticsearch.Nodes;
 using Infrastructure.Data.Interfaces;
 using Infrastructure.Data.Models.Jogos;
 using System;
@@ -27,7 +28,6 @@ namespace Infrastructure.Data.Repositories
                 var response = await _client.SearchAsync<JogoESModel>(s => s
                     .Index("games")
                     .Query(q => q.MatchAll())
-                    .Size(100)
                 );
 
                 if (!response.IsValidResponse)
@@ -46,7 +46,9 @@ namespace Infrastructure.Data.Repositories
                         Nome = doc.Nome,
                         Descricao = doc.Descricao,
                         Preco = doc.Preco,
-                        DataLancamento = doc.DataLancamento
+                        DataLancamento = doc.DataLancamento,
+                        qtdPesquisas = doc.qtdPesquisas,
+                        tipoJogo=doc.tipoJogo
                     };
                 }).ToList();
 
@@ -72,13 +74,16 @@ namespace Infrastructure.Data.Repositories
                 }
                 var IdList = response.Id;
 
+                await AtualizaPesquisa(id);
                 JogoESDocumentoModel jogo = new JogoESDocumentoModel
                 {
                     Id = IdList,
                     DataLancamento = response.Source.DataLancamento,
                     Descricao = response.Source.Descricao,
                     Preco = response.Source.Preco,
-                    Nome = response.Source.Nome
+                    Nome = response.Source.Nome,
+                    qtdPesquisas=response.Source.qtdPesquisas,
+                    tipoJogo = response.Source.tipoJogo 
                 };
                 return jogo;
             }
@@ -143,6 +148,31 @@ namespace Infrastructure.Data.Repositories
             }
         }
 
+        public async Task<bool> AtualizaPesquisa(string id)
+        {
+            try
+            {
+                var response = await _client.UpdateAsync<JogoESModel, object>("games", id, u => u
+                    .Script(s => s
+                        .Source("ctx._source.qtdPesquisas = (ctx._source.qtdPesquisas ?: 0) + 1")
+                    )
+                );
+                if (!response.IsValidResponse)
+                {
+                    Console.WriteLine($"Erro ao atualizar:  {response.ApiCallDetails?.OriginalException?.Message}");
+                    return false;
+                }
+
+                Console.WriteLine($"Jogo atualizado:  {id}");
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error:  {ex.Message}");
+                return false;
+            }
+
+        }
         public async Task<bool> RemoverAsync(string id)
         {
             try
@@ -163,6 +193,81 @@ namespace Infrastructure.Data.Repositories
             {
                 Console.WriteLine($"Error:  {ex.Message}");
                 return false;
+            }
+        }
+
+        [Obsolete]
+        public async Task<List<JogoESDocumentoModel>> BuscarPopularesAsync(int qtd, int? tipoJogo)
+        {
+            try
+            {
+                SearchResponse<JogoESModel> response;
+                if (tipoJogo>0)
+                {
+                    response = await _client.SearchAsync<JogoESModel>(s => s
+                        .Index("games")
+                        .Size(qtd)
+                        .Query(q => q
+                            .Bool(b => b
+                                .Filter(f => f
+                                    .Term(t => t
+                                        .Field(p => p.tipoJogo)
+                                        .Value((FieldValue)tipoJogo)
+                                    )
+                                )
+                            )
+                        )
+                        .Sort(sort => sort
+                            .Field(f => f
+                                .Field(p => p.qtdPesquisas)
+                                .Order(SortOrder.Desc)
+                            )
+                        )
+                    );
+                }
+                else
+                {
+                     response = await _client.SearchAsync<JogoESModel>(s => s
+                        .Index("games")
+                        .Size(qtd)
+                        .Sort(sort => sort
+                            .Field(f => f
+                                .Field(p => p.qtdPesquisas)
+                                .Order(SortOrder.Desc)
+                            )
+                        )
+                    );
+                }
+
+                if (!response.IsValidResponse)
+                {
+                    Console.WriteLine($"❌ Erro:  {response.ApiCallDetails?.OriginalException?.Message}");
+                    return new List<JogoESDocumentoModel>();
+                }
+
+                var hitsList = response.Hits.ToList(); // Converter para lista
+
+                var jogos = response.Documents.Select((doc, index) =>
+                {
+                    var hit = hitsList[index];
+                    return new JogoESDocumentoModel
+                    {
+                        Id = hit.Id,
+                        Nome = doc.Nome,
+                        Descricao = doc.Descricao,
+                        Preco = doc.Preco,
+                        DataLancamento = doc.DataLancamento,
+                        qtdPesquisas = doc.qtdPesquisas,
+                        tipoJogo=doc.tipoJogo
+                    };
+                }).ToList();
+
+                return jogos;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"❌ Exceção: {ex.Message}");
+                return new List<JogoESDocumentoModel>();
             }
         }
     }

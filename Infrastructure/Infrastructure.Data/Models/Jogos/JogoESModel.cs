@@ -12,7 +12,9 @@ namespace Infrastructure.Data.Models.Jogos
         public string? Descricao { get; set; }
         public decimal Preco { get; set; }
         public DateTime? DataLancamento { get; set; }
-        public void Atualizar(string? nome, string? descricao, decimal? preco, DateTime? dataLancamento)
+        public int qtdPesquisas { get; set; }
+        public int tipoJogo { get; set; }
+        public void Atualizar(string? nome, string? descricao, decimal? preco, DateTime? dataLancamento, int? tipoJogo)
         {
             if (!string.IsNullOrEmpty(nome))
                 Nome = nome!;
@@ -25,7 +27,9 @@ namespace Infrastructure.Data.Models.Jogos
 
             if (dataLancamento != null)
                 DataLancamento = dataLancamento.Value;
-        }
+            if (tipoJogo.HasValue && tipoJogo.Value > 0)
+                this.tipoJogo = tipoJogo.Value;
 
+        }
     }
 }

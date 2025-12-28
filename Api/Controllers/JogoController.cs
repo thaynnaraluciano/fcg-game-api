@@ -2,8 +2,11 @@
 using Domain.Commands.v1.Jogos.AtualizarJogo;
 using Domain.Commands.v1.Jogos.BuscarJogoPorId;
 using Domain.Commands.v1.Jogos.CriarJogo;
+using Domain.Commands.v1.Jogos.JogosPopulares;
 using Domain.Commands.v1.Jogos.ListarJogos;
 using Domain.Commands.v1.Jogos.RemoverJogo;
+using Domain.Enums;
+using Elastic.Clients.Elasticsearch;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -108,5 +111,25 @@ namespace Api.Controllers
             await _mediator.Send(command);
             return NoContent();
         }
+
+        [HttpGet("ListarPopulares/{quantidade}")]
+        //[Authorize(Policy = PoliticasDeAcesso.Admin)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [SwaggerOperation(
+            Summary = "Listar jogos populares",
+            Description = "Lista jogos populares com base nas pesquisas dentro do elastic Search"
+        )]
+        public async Task<IActionResult> ListarJogosPopulares(int quantidade, TipoJogosEnum? tipoJogo)
+        {
+            var query = new JogosPopularesCommand(quantidade, tipoJogo);
+            var jogo = await _mediator.Send(query);
+            return Ok(jogo);
+
+        }
+
     }
 }

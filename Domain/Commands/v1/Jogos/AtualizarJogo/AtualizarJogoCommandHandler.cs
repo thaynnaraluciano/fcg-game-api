@@ -30,7 +30,7 @@ namespace Domain.Commands.v1.Jogos.AtualizarJogo
                 throw new Exception($"Jogo com ID {request.Id} não encontrado.");
             }
 
-            jogoExistente.Atualizar(request.Nome, request.Descricao, request.Preco, request.DataLancamento);
+            jogoExistente.Atualizar(request.Nome, request.Descricao, request.Preco, request.DataLancamento,Convert.ToInt16(request.tipoJogo));
 
             await _jogoRepository.AtualizarAsync(jogoExistente.Id,jogoExistente);
 
