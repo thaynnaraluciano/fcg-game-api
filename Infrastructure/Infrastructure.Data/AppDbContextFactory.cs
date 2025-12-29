@@ -10,7 +10,7 @@ namespace Infrastructure.Data
             var optionsBuilder = new DbContextOptionsBuilder<AppDbContext>();
             optionsBuilder.UseMySql
             (
-                "Server=localhost;Database=DbJogoFiap;User=root;Password=root;",
+                "Server=localhost;Database=Bd_Games;User=root;Password=root;",
                 new MySqlServerVersion(new Version(8, 0, 42))
             );
             return new AppDbContext(optionsBuilder.Options);
