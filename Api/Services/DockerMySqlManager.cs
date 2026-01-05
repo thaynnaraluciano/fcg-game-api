@@ -12,7 +12,22 @@ namespace Api.Services
 
         private static DockerClient GetClient()
         {
-            return new DockerClientConfiguration(new Uri("npipe://./pipe/docker_engine")).CreateClient();
+            Uri dockerUri;
+
+            if (OperatingSystem.IsWindows())
+            {
+                dockerUri = new Uri("npipe://./pipe/docker_engine");
+            }
+            else if (OperatingSystem.IsMacOS() || OperatingSystem.IsLinux())
+            {
+                dockerUri = new Uri("unix:///var/run/docker.sock");
+            }
+            else
+            {
+                throw new PlatformNotSupportedException("Sistema operacional não suportado para Docker.");
+            }
+
+            return new DockerClientConfiguration(dockerUri).CreateClient();
         }
         static string GetPassword(string conn)
         {
