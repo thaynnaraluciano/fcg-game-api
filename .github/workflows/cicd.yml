@@ -3,7 +3,7 @@ name: CI/CD
 on:
   push:
     branches:
-      - main
+      - fix/cicd
   pull_request: 
     branches: 
       - main
@@ -74,7 +74,7 @@ jobs:
   deploy:
     needs: publish-image
     runs-on: ubuntu-latest
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    #if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     steps:
       - name: Code checkout
         uses: actions/checkout@v4
