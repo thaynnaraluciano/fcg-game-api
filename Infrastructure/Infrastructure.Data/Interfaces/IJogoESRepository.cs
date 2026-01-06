@@ -16,5 +16,6 @@ namespace Infrastructure.Data.Interfaces
         Task<bool> AtualizarAsync(string id, JogoESModel game);
         Task<bool> RemoverAsync(string id);
         Task<List<JogoESDocumentoModel>> BuscarPopularesAsync(int qtd, int? tipoJogo);
+        Task<List<JogoESDocumentoModel>> BuscaSugestoesUserAsync(string idUser);
     }
 }

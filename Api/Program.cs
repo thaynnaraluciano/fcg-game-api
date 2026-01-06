@@ -10,6 +10,7 @@ using Domain.Commands.v1.Jogos.CriarJogo;
 using Domain.Commands.v1.Jogos.JogosPopulares;
 using Domain.Commands.v1.Jogos.ListarJogos;
 using Domain.Commands.v1.Jogos.RemoverJogo;
+using Domain.Commands.v1.Jogos.SugerirJogos;
 using Domain.Commands.v1.Promocoes.AtualizarPromocao;
 using Domain.Commands.v1.Promocoes.BuscarPromocaoPorId;
 using Domain.Commands.v1.Promocoes.CriarPromocao;
@@ -42,7 +43,7 @@ builder.Services.AddMediatR(config => config.RegisterServicesFromAssembly(typeof
 builder.Services.AddMediatR(config => config.RegisterServicesFromAssembly(typeof(ListarJogosCommandHandler).Assembly));
 builder.Services.AddMediatR(config => config.RegisterServicesFromAssembly(typeof(BuscarJogoPorIdCommandHandler).Assembly));
 builder.Services.AddMediatR(config => config.RegisterServicesFromAssembly(typeof(JogosPopularesCommandHandler).Assembly));
-
+builder.Services.AddMediatR(config => config.RegisterServicesFromAssembly(typeof(SugerirJogosCommandHandler).Assembly));
 // Promoções
 builder.Services.AddMediatR(config => config.RegisterServicesFromAssembly(typeof(CriarPromocaoCommandHandler).Assembly));
 builder.Services.AddMediatR(config => config.RegisterServicesFromAssembly(typeof(AtualizarPromocaoCommandHandler).Assembly));
@@ -69,7 +70,7 @@ builder.Services.AddScoped<IValidator<RemoverJogoCommand>, RemoverJogoCommandVal
 builder.Services.AddScoped<IValidator<BuscarJogoPorIdCommand>, BuscarJogoPorIdCommandValidator>();
 builder.Services.AddScoped<IValidator<ListarJogosCommand>, ListarJogosCommandValidator>();
 builder.Services.AddScoped<IValidator<JogosPopularesCommand>, JogosPopularesCommandValidator>();
-
+builder.Services.AddScoped<IValidator<SugerirJogosCommand>, SugerirJogosCommandValidator>();
 // Promoções
 builder.Services.AddScoped<IValidator<CriarPromocaoCommand>, CriarPromocaoCommandValidator>();
 builder.Services.AddScoped<IValidator<AtualizarPromocaoCommand>, AtualizarPromocaoCommandValidator>();

@@ -4,6 +4,7 @@ using Domain.Commands.v1.Jogos.BuscarJogoPorId;
 using Domain.Commands.v1.Jogos.CriarJogo;
 using Domain.Commands.v1.Jogos.JogosPopulares;
 using Domain.Commands.v1.Jogos.ListarJogos;
+using Domain.Commands.v1.Jogos.SugerirJogos;
 using Infrastructure.Data.Models.Jogos;
 
 namespace Domain.MapperProfiles
@@ -19,7 +20,7 @@ namespace Domain.MapperProfiles
             CreateMap<CriarJogoCommand, JogoESDocumentoModel>();
             CreateMap<JogoESDocumentoModel, BuscarJogoPorIdCommandResponse>();
             CreateMap<JogoESDocumentoModel, JogosPopularesCommandResponse>();
-
+            CreateMap<JogoESDocumentoModel, SugerirJogosCommandResponse>();
         }
     }
 }

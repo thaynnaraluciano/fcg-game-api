@@ -270,5 +270,74 @@ namespace Infrastructure.Data.Repositories
                 return new List<JogoESDocumentoModel>();
             }
         }
+        [Obsolete]
+        public async Task<List<JogoESDocumentoModel>> BuscaSugestoesUserAsync(string idUser)
+        {
+            var resultado = new Dictionary<string, int>();
+            try
+            {
+                var response = await _client.SearchAsync<JogosHistoricoModel>(s => s
+                    .Index("user_game_history")
+                    .Size(0)
+                    .Query(q => q
+                    .Term(t => t
+                        .Field("userId.keyword")
+                        .Value(idUser.ToString())
+                    )
+                ).Aggregations(aggs => aggs
+                    .Add("group_por_tipo", a => a
+                        .Terms(t => t
+                            .Field("tipoJogo.keyword")
+                        )
+                    )                
+                )
+                );
+
+                if (!response.IsValidResponse)
+                {
+                    Console.WriteLine($"Erro:  {response.ApiCallDetails.OriginalException?.Message}");
+                    return new List<JogoESDocumentoModel>();
+                }
+                var buckets = response.Aggregations
+                        .GetStringTerms("group_por_tipo")
+                        .Buckets;
+                              //SE N RETORNAR NADA, VOLTA VAZIO
+                if (buckets.Count == 0)
+                {
+                    return new List<JogoESDocumentoModel>();
+                }
+                foreach (var bucket in buckets)
+                {
+                    resultado[bucket.Key.ToString()] = Convert.ToInt16(bucket.DocCount);
+                }
+                //Oredena o historico daquele user por tipo de jogo mais acessado
+                var tiposOrdenados = resultado.OrderByDescending(x => x.Value);
+
+                // Check if we have any ordered results
+                if (!tiposOrdenados.Any())
+                {
+                    return new List<JogoESDocumentoModel>();
+                }
+
+                TipoJogosEnum? tipoJogo = null;
+                if (Enum.TryParse<TipoJogosEnum>(tiposOrdenados.First().Key, out var tipoEnum))
+                {
+                    tipoJogo = tipoEnum;
+                }
+                if (tipoJogo.HasValue)
+                {
+                    //Busca 5 sugestoes baseado no tipo de jogo mais acessado pelo usuario
+                    List<JogoESDocumentoModel> jogosSugeridos = await BuscarPopularesAsync(5, Convert.ToInt16(tipoJogo.Value));
+                    return jogosSugeridos;
+                }
+
+                return new List<JogoESDocumentoModel>();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Erro ao buscar games: {ex.Message}");
+                return new List<JogoESDocumentoModel>();
+            }
+        }
     }
 }

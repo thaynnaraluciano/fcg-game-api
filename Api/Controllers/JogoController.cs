@@ -5,6 +5,7 @@ using Domain.Commands.v1.Jogos.CriarJogo;
 using Domain.Commands.v1.Jogos.JogosPopulares;
 using Domain.Commands.v1.Jogos.ListarJogos;
 using Domain.Commands.v1.Jogos.RemoverJogo;
+using Domain.Commands.v1.Jogos.SugerirJogos;
 using Domain.Enums;
 using Elastic.Clients.Elasticsearch;
 using MediatR;
@@ -130,6 +131,23 @@ namespace Api.Controllers
             return Ok(jogo);
 
         }
+        [HttpGet("SugerirJogosHistorico/{idUser}")]
+        //[Authorize(Policy = PoliticasDeAcesso.Admin)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [SwaggerOperation(
+            Summary = "Listar jogos com base no historico do usuario",
+            Description = "Lista jogos sugeridos com base no historico do usuario dentro do elastic Search "
+        )]
+        public async Task<IActionResult> SugerirJogosHistorico(string idUser)
+        {
+            var query = new SugerirJogosCommand(idUser);
+            var jogo = await _mediator.Send(query);
+            return Ok(jogo);
 
+        }
     }
 }
