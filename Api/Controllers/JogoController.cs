@@ -161,7 +161,7 @@ namespace Api.Controllers
             Summary = "Listar jogos com base no genero do jogo pesquisado",
             Description = "Lista jogos sugeridos com base no genero do jogo pesquisado dentro do elastic Search "
         )]
-        public async Task<IActionResult> SugerirJogosHistorico(Guid idJogo)
+        public async Task<IActionResult> BuscaJogoComSugestoes(Guid idJogo)
         {
             var query = new BuscaJogoeSugestoesCommand(idJogo);
             var jogo = await _mediator.Send(query);
