@@ -5,6 +5,7 @@ using CrossCutting.Exceptions.Middlewares;
 using Domain.Commands.v1.Biblioteca.ComprarJogo;
 using Domain.Commands.v1.Biblioteca.ConsultaBiblioteca;
 using Domain.Commands.v1.Jogos.AtualizarJogo;
+using Domain.Commands.v1.Jogos.BuscarJogoeSugestoes;
 using Domain.Commands.v1.Jogos.BuscarJogoPorId;
 using Domain.Commands.v1.Jogos.CriarJogo;
 using Domain.Commands.v1.Jogos.JogosPopulares;
@@ -44,6 +45,7 @@ builder.Services.AddMediatR(config => config.RegisterServicesFromAssembly(typeof
 builder.Services.AddMediatR(config => config.RegisterServicesFromAssembly(typeof(BuscarJogoPorIdCommandHandler).Assembly));
 builder.Services.AddMediatR(config => config.RegisterServicesFromAssembly(typeof(JogosPopularesCommandHandler).Assembly));
 builder.Services.AddMediatR(config => config.RegisterServicesFromAssembly(typeof(SugerirJogosCommandHandler).Assembly));
+builder.Services.AddMediatR(config => config.RegisterServicesFromAssembly(typeof(BuscaJogoeSugestoesCommandHandler).Assembly));
 // Promoções
 builder.Services.AddMediatR(config => config.RegisterServicesFromAssembly(typeof(CriarPromocaoCommandHandler).Assembly));
 builder.Services.AddMediatR(config => config.RegisterServicesFromAssembly(typeof(AtualizarPromocaoCommandHandler).Assembly));
@@ -71,6 +73,7 @@ builder.Services.AddScoped<IValidator<BuscarJogoPorIdCommand>, BuscarJogoPorIdCo
 builder.Services.AddScoped<IValidator<ListarJogosCommand>, ListarJogosCommandValidator>();
 builder.Services.AddScoped<IValidator<JogosPopularesCommand>, JogosPopularesCommandValidator>();
 builder.Services.AddScoped<IValidator<SugerirJogosCommand>, SugerirJogosCommandValidator>();
+builder.Services.AddScoped<IValidator<BuscaJogoeSugestoesCommand>, BuscaJogoeSugestoesCommandValidator>();
 // Promoções
 builder.Services.AddScoped<IValidator<CriarPromocaoCommand>, CriarPromocaoCommandValidator>();
 builder.Services.AddScoped<IValidator<AtualizarPromocaoCommand>, AtualizarPromocaoCommandValidator>();

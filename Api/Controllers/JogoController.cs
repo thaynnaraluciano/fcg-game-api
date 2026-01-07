@@ -1,5 +1,6 @@
 ﻿using CrossCutting.Configuration.Authorization;
 using Domain.Commands.v1.Jogos.AtualizarJogo;
+using Domain.Commands.v1.Jogos.BuscarJogoeSugestoes;
 using Domain.Commands.v1.Jogos.BuscarJogoPorId;
 using Domain.Commands.v1.Jogos.CriarJogo;
 using Domain.Commands.v1.Jogos.JogosPopulares;
@@ -145,6 +146,24 @@ namespace Api.Controllers
         public async Task<IActionResult> SugerirJogosHistorico(string idUser)
         {
             var query = new SugerirJogosCommand(idUser);
+            var jogo = await _mediator.Send(query);
+            return Ok(jogo);
+
+        }
+        [HttpGet("BuscaJogoComSugestoes/{idJogo}")]
+        //[Authorize(Policy = PoliticasDeAcesso.Admin)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [SwaggerOperation(
+            Summary = "Listar jogos com base no genero do jogo pesquisado",
+            Description = "Lista jogos sugeridos com base no genero do jogo pesquisado dentro do elastic Search "
+        )]
+        public async Task<IActionResult> SugerirJogosHistorico(Guid idJogo)
+        {
+            var query = new BuscaJogoeSugestoesCommand(idJogo);
             var jogo = await _mediator.Send(query);
             return Ok(jogo);
 
