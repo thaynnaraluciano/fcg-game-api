@@ -25,6 +25,12 @@ using Infrastructure.Data.Interfaces;
 using Infrastructure.Data.Repositories;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using Prometheus.DotNetRuntime;
+using Prometheus;
+using Api.Extensions;
+using CrossCutting.Monitoring;
+using CrossCutting.Configuration;
+using Microsoft.OpenApi.Models;
 using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -32,7 +38,18 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+
+builder.Services.AddSwaggerGen(c =>
+{
+    c.SwaggerDoc("v1", new OpenApiInfo
+    {
+        Title = "FIAP Games API",
+        Version = "v1",
+        Description = "API para gerenciamento de jogos FIAP"
+    });
+
+    c.CustomSchemaIds(type => type.FullName);
+});
 
 builder.Services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
 
@@ -92,6 +109,9 @@ builder.Services.AddScoped<IPromocaoRepository, PromocaoRepository>();
 builder.Services.AddScoped<IBibliotecaRepository, BibliotecaRepository>();
 #endregion
 
+builder.Services.Configure<AppSettings>(builder.Configuration);
+builder.Services.AddSingleton<IMetricsService, MetricsService>();
+
 #if DEBUG
 //Chama o gerenciador do docker ANTES da aplicação iniciar
 string connString = builder.Configuration.GetConnectionString(name: "DefaultConnection") ?? "";
@@ -110,9 +130,9 @@ catch
 
 // Le variáveis de ambiente (do SO, .env ou secrets)
 string host = Environment.GetEnvironmentVariable("DB_HOST") ?? "localhost";
-string db = Environment.GetEnvironmentVariable("DB_NAME") ?? "testdb";
+string db = Environment.GetEnvironmentVariable("DB_NAME") ?? "Bd_Games";
 string user = Environment.GetEnvironmentVariable("DB_USER") ?? "root";
-string pass = Environment.GetEnvironmentVariable("DB_PASSWORD") ?? "";
+string pass = Environment.GetEnvironmentVariable("DB_PASSWORD") ?? "root";
 
 string connString = $"Server={host};Database={db};User={user};Password={pass};";
 
@@ -142,10 +162,23 @@ Infrastructure.Data.MigrationHelper.ApplyMigrations(app);
 
 #endif
 
-app.UseSwagger();
-app.UseSwaggerUI();
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI(c =>
+    {
+        c.SwaggerEndpoint("/swagger/v1/swagger.json", "FIAP Games API v1");
+    });
+}
 
 app.UseHttpsRedirection();
+
+DotNetRuntimeStatsBuilder.Default().StartCollecting();
+
+app.UseRouting();
+
+app.UseRequestMetrics();
+app.MapMetrics();
 
 app.UseAuthorization();
 
