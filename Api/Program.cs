@@ -111,6 +111,11 @@ builder.Services.AddScoped<IBibliotecaRepository, BibliotecaRepository>();
 
 builder.Services.Configure<AppSettings>(builder.Configuration);
 builder.Services.AddSingleton<IMetricsService, MetricsService>();
+//Le variáveis do .env para o elasticSearch
+string elasticUrl = Environment.GetEnvironmentVariable("ELASTICSEARCH_URLAPI") ?? builder.Configuration["ElasticSearch:urlApi"] ?? "";
+string elasticKey = Environment.GetEnvironmentVariable("ELASTICSEARCH_KEY") ?? builder.Configuration["ElasticSearch:Key"] ?? "";
+builder.Configuration["ElasticSearch:urlApi"] = elasticUrl;
+builder.Configuration["ElasticSearch:Key"] = elasticKey;
 
 #if DEBUG
 //Chama o gerenciador do docker ANTES da aplicação iniciar
