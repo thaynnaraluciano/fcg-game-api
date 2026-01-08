@@ -1,4 +1,5 @@
-﻿using MediatR;
+﻿using Domain.Enums;
+using MediatR;
 
 namespace Domain.Commands.v1.Jogos.CriarJogo
 {
@@ -8,5 +9,6 @@ namespace Domain.Commands.v1.Jogos.CriarJogo
         public string? Descricao { get; set; }
         public decimal Preco { get; set; }
         public DateTime DataLancamento { get; set; }
+        public TipoJogosEnum tipoJogo { get; set; }
     }
 }

@@ -8,11 +8,11 @@ namespace Domain.Commands.v1.Jogos.CriarJogo
 {
     public class CriarJogoCommandHandler : IRequestHandler<CriarJogoCommand, CriarJogoCommandResponse>
     {
-        private readonly IJogoRepository _jogoRepository;
+        private readonly IJogoESRepository _jogoRepository;
         private readonly IMapper _mapper;
         private readonly ILogger<CriarJogoCommandHandler> _logger;
 
-        public CriarJogoCommandHandler(IJogoRepository jogoRepository, IMapper mapper, ILogger<CriarJogoCommandHandler> logger)
+        public CriarJogoCommandHandler(IJogoESRepository jogoRepository, IMapper mapper, ILogger<CriarJogoCommandHandler> logger)
         {
             _jogoRepository = jogoRepository;
             _mapper = mapper;
@@ -22,12 +22,17 @@ namespace Domain.Commands.v1.Jogos.CriarJogo
         public async Task<CriarJogoCommandResponse> Handle(CriarJogoCommand request, CancellationToken cancellationToken)
         {
             _logger.LogInformation($"Criando novo jogo");
-            var jogo = _mapper.Map<JogoModel>(request);
+            var jogo = _mapper.Map<JogoESDocumentoModel>(request);
 
-            await _jogoRepository.AdicionarAsync(jogo);
-
-            _logger.LogInformation($"Jogo criado com sucesso");
-            return _mapper.Map<CriarJogoCommandResponse>(jogo);
+            if (await _jogoRepository.CriarAsync(jogo)){
+                _logger.LogInformation($"Jogo criado com sucesso");
+                return _mapper.Map<CriarJogoCommandResponse>(jogo);
+            }
+            else
+            {
+                _logger.LogInformation($"Erro ao criar jogo");
+                return _mapper.Map<CriarJogoCommandResponse>(jogo);
+            }
         }
     }
 }

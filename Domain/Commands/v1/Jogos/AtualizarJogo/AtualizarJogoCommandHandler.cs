@@ -7,11 +7,11 @@ namespace Domain.Commands.v1.Jogos.AtualizarJogo
 {
     public class AtualizarJogoCommandHandler : IRequestHandler<AtualizarJogoCommand, AtualizarJogoCommandResponse>
     {
-        private readonly IJogoRepository _jogoRepository;
+        private readonly IJogoESRepository _jogoRepository;
         private readonly IMapper _mapper;
         private readonly ILogger<AtualizarJogoCommandHandler> _logger;
 
-        public AtualizarJogoCommandHandler(IJogoRepository jogoRepository, IMapper mapper, ILogger<AtualizarJogoCommandHandler> logger)
+        public AtualizarJogoCommandHandler(IJogoESRepository jogoRepository, IMapper mapper, ILogger<AtualizarJogoCommandHandler> logger)
         {
             _jogoRepository = jogoRepository;
             _mapper = mapper;
@@ -22,7 +22,7 @@ namespace Domain.Commands.v1.Jogos.AtualizarJogo
         {
             _logger.LogInformation($"Atualizando jogo {request.Id}");
 
-            var jogoExistente = await _jogoRepository.ObterPorIdAsync(request.Id);
+            var jogoExistente = await _jogoRepository.BuscarPorIdAsync(request.Id.ToString());
 
             if (jogoExistente == null)
             {
@@ -30,9 +30,9 @@ namespace Domain.Commands.v1.Jogos.AtualizarJogo
                 throw new Exception($"Jogo com ID {request.Id} não encontrado.");
             }
 
-            jogoExistente.Atualizar(request.Nome, request.Descricao, request.Preco, request.DataLancamento);
+            jogoExistente.Atualizar(request.Nome, request.Descricao, request.Preco, request.DataLancamento,Convert.ToInt16(request.tipoJogo));
 
-            await _jogoRepository.AtualizarAsync(jogoExistente);
+            await _jogoRepository.AtualizarAsync(jogoExistente.Id,jogoExistente);
 
             _logger.LogInformation($"Jogo com ID {request.Id} atualizado.");
 

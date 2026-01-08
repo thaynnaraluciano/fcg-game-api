@@ -1,12 +1,17 @@
+using Api.Services;
 using Api.Utils;
+using CrossCutting.Configuration;
 using CrossCutting.Exceptions.Middlewares;
 using Domain.Commands.v1.Biblioteca.ComprarJogo;
 using Domain.Commands.v1.Biblioteca.ConsultaBiblioteca;
 using Domain.Commands.v1.Jogos.AtualizarJogo;
+using Domain.Commands.v1.Jogos.BuscarJogoeSugestoes;
 using Domain.Commands.v1.Jogos.BuscarJogoPorId;
 using Domain.Commands.v1.Jogos.CriarJogo;
+using Domain.Commands.v1.Jogos.JogosPopulares;
 using Domain.Commands.v1.Jogos.ListarJogos;
 using Domain.Commands.v1.Jogos.RemoverJogo;
+using Domain.Commands.v1.Jogos.SugerirJogos;
 using Domain.Commands.v1.Promocoes.AtualizarPromocao;
 using Domain.Commands.v1.Promocoes.BuscarPromocaoPorId;
 using Domain.Commands.v1.Promocoes.CriarPromocao;
@@ -26,6 +31,7 @@ using Api.Extensions;
 using CrossCutting.Monitoring;
 using CrossCutting.Configuration;
 using Microsoft.OpenApi.Models;
+using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -54,6 +60,9 @@ builder.Services.AddMediatR(config => config.RegisterServicesFromAssembly(typeof
 builder.Services.AddMediatR(config => config.RegisterServicesFromAssembly(typeof(RemoverJogoCommandHandler).Assembly));
 builder.Services.AddMediatR(config => config.RegisterServicesFromAssembly(typeof(ListarJogosCommandHandler).Assembly));
 builder.Services.AddMediatR(config => config.RegisterServicesFromAssembly(typeof(BuscarJogoPorIdCommandHandler).Assembly));
+builder.Services.AddMediatR(config => config.RegisterServicesFromAssembly(typeof(JogosPopularesCommandHandler).Assembly));
+builder.Services.AddMediatR(config => config.RegisterServicesFromAssembly(typeof(SugerirJogosCommandHandler).Assembly));
+builder.Services.AddMediatR(config => config.RegisterServicesFromAssembly(typeof(BuscaJogoeSugestoesCommandHandler).Assembly));
 // Promoções
 builder.Services.AddMediatR(config => config.RegisterServicesFromAssembly(typeof(CriarPromocaoCommandHandler).Assembly));
 builder.Services.AddMediatR(config => config.RegisterServicesFromAssembly(typeof(AtualizarPromocaoCommandHandler).Assembly));
@@ -79,6 +88,9 @@ builder.Services.AddScoped<IValidator<AtualizarJogoCommand>, AtualizarJogoComman
 builder.Services.AddScoped<IValidator<RemoverJogoCommand>, RemoverJogoCommandValidator>();
 builder.Services.AddScoped<IValidator<BuscarJogoPorIdCommand>, BuscarJogoPorIdCommandValidator>();
 builder.Services.AddScoped<IValidator<ListarJogosCommand>, ListarJogosCommandValidator>();
+builder.Services.AddScoped<IValidator<JogosPopularesCommand>, JogosPopularesCommandValidator>();
+builder.Services.AddScoped<IValidator<SugerirJogosCommand>, SugerirJogosCommandValidator>();
+builder.Services.AddScoped<IValidator<BuscaJogoeSugestoesCommand>, BuscaJogoeSugestoesCommandValidator>();
 // Promoções
 builder.Services.AddScoped<IValidator<CriarPromocaoCommand>, CriarPromocaoCommandValidator>();
 builder.Services.AddScoped<IValidator<AtualizarPromocaoCommand>, AtualizarPromocaoCommandValidator>();
@@ -92,12 +104,19 @@ builder.Services.AddScoped<IValidator<ComprarJogoCommand>, ComprarJogoCommandVal
 
 #region Interfaces
 builder.Services.AddScoped<IJogoRepository, JogoRepository>();
+builder.Services.AddScoped<IJogoESRepository, JogoESRepository>();
 builder.Services.AddScoped<IPromocaoRepository, PromocaoRepository>();
 builder.Services.AddScoped<IBibliotecaRepository, BibliotecaRepository>();
 #endregion
 
 builder.Services.Configure<AppSettings>(builder.Configuration);
 builder.Services.AddSingleton<IMetricsService, MetricsService>();
+
+#if DEBUG
+//Chama o gerenciador do docker ANTES da aplicação iniciar
+string connString = builder.Configuration.GetConnectionString(name: "DefaultConnection") ?? "";
+await DockerMySqlManager.EnsureMySqlContainerRunningAsync(connString);
+#else
 
 try
 {
@@ -117,6 +136,14 @@ string pass = Environment.GetEnvironmentVariable("DB_PASSWORD") ?? "root";
 
 string connString = $"Server={host};Database={db};User={user};Password={pass};";
 
+#endif
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.Converters.Add(
+            new JsonStringEnumConverter()
+        );
+    });
 
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseMySql(
@@ -124,7 +151,16 @@ builder.Services.AddDbContext<AppDbContext>(options =>
         new MySqlServerVersion(new Version(8, 0, 43))
     ));
 
+builder.Services.AddCrossCutting(builder.Configuration);
+
 var app = builder.Build();
+#if DEBUG
+//Aguardando docker subir.
+await Infrastructure.Data.MigrationHelper.WaitForMySqlAsync(connString);
+//Aplica migrations se não estiver atualizado
+Infrastructure.Data.MigrationHelper.ApplyMigrations(app);
+
+#endif
 
 
     app.UseSwagger(c =>
