@@ -126,8 +126,7 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 
 var app = builder.Build();
 
-if (app.Environment.IsDevelopment())
-{
+
     app.UseSwagger(c =>
     {
         c.PreSerializeFilters.Add((swaggerDoc, httpReq) =>
@@ -138,11 +137,9 @@ if (app.Environment.IsDevelopment())
             };
         });
     });
-    app.UseSwaggerUI(c =>
-    {
-        c.SwaggerEndpoint("/swagger/v1/swagger.json", "FIAP Games API v1");
-    });
-}
+    app.UseSwaggerUI();
+
+
 
 app.UseHttpsRedirection();
 
@@ -156,6 +153,7 @@ app.MapMetrics();
 app.UseAuthorization();
 
 app.MapControllers();
+app.MapGet("/health", () => Results.Ok("Healthy"));
 
 app.UseMiddleware<MiddlewareTratamentoDeExcecoes>();
 
