@@ -126,8 +126,20 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 
 var app = builder.Build();
 
-app.UseSwagger();
-app.UseSwaggerUI();
+
+    app.UseSwagger(c =>
+    {
+        c.PreSerializeFilters.Add((swaggerDoc, httpReq) =>
+        {
+            swaggerDoc.Servers = new List<OpenApiServer>
+            {
+                new() { Url = "/game" }
+            };
+        });
+    });
+    app.UseSwaggerUI();
+
+
 
 app.UseHttpsRedirection();
 
