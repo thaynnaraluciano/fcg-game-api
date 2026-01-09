@@ -23,7 +23,7 @@ Para executar a aplicação em ambiente local, siga os passos a seguir:
 
 ## Escolhas de desenvolvimento
 
-A aplicação foi separada em microsserviços, sendo este o microsserviço de usuários.
+A aplicação foi separada em microsserviços, sendo este o microsserviço de jogos.
 Esta API foi feita em camadas, sendo elas: Presentation, Domain, Infrastructure, CrossCutting e Tests. Todos os projetos foram desevolvidos seguindo as boas práticas de programação e foram baseadas no DDD.
 
 Os testes criados foram unitários, utilizando as bibliotecas xUnit e Bogus. Os testes foram focados em garantir o funcionamento das validações e o tratamento de exceções.
@@ -33,3 +33,5 @@ Para logs foi utilizada a interface ILogger da biblioteca Microsoft.Extensions.L
 O tratamento de exceções é realizado pela captura de exceções e tratamento conforme statusCodes do Http via exceptions personalizadas. A captura e retorno padronizado das exceções foi configurado via Middleware.
 
 Foi utilizado Elastic Search para consulta otimizada dos jogos e recomendações específicas para cada usuário.
+
+O microsserviço foi disponibilizado de forma segura através de api gateway.
