@@ -1,0 +1,57 @@
+version: '3.9'
+
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: fiap-game-api
+    ports:
+      - "8080:8080"
+    depends_on:
+      - mysql
+    environment:
+      ASPNETCORE_ENVIRONMENT: "Development"
+      ConnectionStrings__DefaultConnection: "server=mysql;database=DbPagamentoFiap;user=root;password=root"
+    networks:
+      - fiap-net
+
+  mysql:
+    image: mysql:8.0
+    container_name: fiap-mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: DbGameFiap
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - fiap-net
+  
+  rabbitmq:
+    image: rabbitmq:3.11-management
+    container_name: fiap-rabbitmq
+    restart: unless-stopped
+    hostname: rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: root
+      RABBITMQ_DEFAULT_PASS: root
+      RABBITMQ_DEFAULT_VHOST: /
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    networks:
+      - fiap-net
+
+networks:
+  fiap-net:
+    driver: bridge
+
+volumes:
+  mysql_data:
+  rabbitmq_data:
+    driver: local
