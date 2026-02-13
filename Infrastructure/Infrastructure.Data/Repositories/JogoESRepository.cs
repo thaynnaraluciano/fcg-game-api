@@ -287,7 +287,7 @@ namespace Infrastructure.Data.Repositories
                 ).Aggregations(aggs => aggs
                     .Add("group_por_tipo", a => a
                         .Terms(t => t
-                            .Field("tipoJogo.keyword")
+                            .Field("TipoJogo.keyword")
                         )
                     )                
                 )
