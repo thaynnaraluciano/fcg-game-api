@@ -1,7 +1,9 @@
+using Api.Extensions;
 using Api.Services;
 using Api.Utils;
 using CrossCutting.Configuration;
 using CrossCutting.Exceptions.Middlewares;
+using CrossCutting.Monitoring;
 using Domain.Commands.v1.Biblioteca.ComprarJogo;
 using Domain.Commands.v1.Biblioteca.ConsultaBiblioteca;
 using Domain.Commands.v1.Jogos.AtualizarJogo;
@@ -18,19 +20,20 @@ using Domain.Commands.v1.Promocoes.CriarPromocao;
 using Domain.Commands.v1.Promocoes.ListarPromocoes;
 using Domain.Commands.v1.Promocoes.RemoverPromocao;
 using Domain.MapperProfiles;
-using DotNetEnv;
 using FluentValidation;
 using Infrastructure.Data;
 using Infrastructure.Data.Interfaces;
 using Infrastructure.Data.Repositories;
+using Infrastructure.Messaging.Configuration;
+using Infrastructure.Messaging.Consumers;
+using Infrastructure.Messaging.Interfaces;
+using Infrastructure.Messaging.Publishers;
+using MassTransit;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
-using Prometheus.DotNetRuntime;
-using Prometheus;
-using Api.Extensions;
-using CrossCutting.Monitoring;
-using CrossCutting.Configuration;
 using Microsoft.OpenApi.Models;
+using Prometheus;
+using Prometheus.DotNetRuntime;
 using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -107,6 +110,7 @@ builder.Services.AddScoped<IJogoRepository, JogoRepository>();
 builder.Services.AddScoped<IJogoESRepository, JogoESRepository>();
 builder.Services.AddScoped<IPromocaoRepository, PromocaoRepository>();
 builder.Services.AddScoped<IBibliotecaRepository, BibliotecaRepository>();
+builder.Services.AddScoped<IGameAvailableEventPublisher, GameAvailableEventPublisher>();
 #endregion
 
 builder.Services.Configure<AppSettings>(builder.Configuration);
@@ -142,6 +146,20 @@ string pass = Environment.GetEnvironmentVariable("DB_PASSWORD") ?? "root";
 string connString = $"Server={host};Database={db};User={user};Password={pass};";
 
 #endif
+
+#region RABBIT MQ
+builder.Services.AddMassTransit(x =>
+{
+    x.AddConsumer<PaymentConfirmedConsumer>();
+
+    x.UsingRabbitMq((context, cfg) =>
+    {
+        MassTransitConfiguration.Configure(context, cfg);
+    });
+});
+
+#endregion
+
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {
@@ -168,19 +186,17 @@ Infrastructure.Data.MigrationHelper.ApplyMigrations(app);
 #endif
 
 
-    app.UseSwagger(c =>
+app.UseSwagger(c =>
+{
+    c.PreSerializeFilters.Add((swaggerDoc, httpReq) =>
     {
-        c.PreSerializeFilters.Add((swaggerDoc, httpReq) =>
+        swaggerDoc.Servers = new List<OpenApiServer>
         {
-            swaggerDoc.Servers = new List<OpenApiServer>
-            {
                 new() { Url = "/game" }
-            };
-        });
+        };
     });
-    app.UseSwaggerUI();
-
-
+});
+app.UseSwaggerUI();
 
 app.UseHttpsRedirection();
 
