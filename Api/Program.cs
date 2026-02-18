@@ -20,6 +20,7 @@ using Domain.Commands.v1.Promocoes.CriarPromocao;
 using Domain.Commands.v1.Promocoes.ListarPromocoes;
 using Domain.Commands.v1.Promocoes.RemoverPromocao;
 using Domain.MapperProfiles;
+using DotNetEnv;
 using FluentValidation;
 using Infrastructure.Data;
 using Infrastructure.Data.Interfaces;
