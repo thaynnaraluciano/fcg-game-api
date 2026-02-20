@@ -1,0 +1,47 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: game-api
+  namespace: fiap-fcg
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: game-api
+  template:
+    metadata:
+      labels:
+        app: game-api
+    spec:
+      containers:
+        - name: game-api
+          image: 234713854409.dkr.ecr.us-east-1.amazonaws.com/fcg-game-api:1.0.2
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8080
+          envFrom:
+            - configMapRef:
+                name: game-api-config
+            - secretRef:
+                name: rabbitmq-secret
+            - secretRef:
+                name: game-api-db-secret
+          resources:
+            requests:
+              cpu: '100m'
+              memory: '256Mi'
+            limits:
+              cpu: '500m'
+              memory: '512Mi'
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 30
+            periodSeconds: 20
